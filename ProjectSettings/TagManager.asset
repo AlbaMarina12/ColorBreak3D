@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Ground
   - ColorWall
+  - Red
+  - Yellow
+  - Blue
   layers:
   - Default
   - TransparentFX

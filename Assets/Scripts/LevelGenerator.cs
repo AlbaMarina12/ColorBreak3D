@@ -27,8 +27,7 @@ public class LevelGenerator : MonoBehaviour
 
     private GameObject[] currentWalls = new GameObject[3];
 
-    private string playerColor = "Blue";
-    private string correctWallColor;
+    private string playerColor = "Red";
     private string targetResultColor;
 
     private int score = 0;
@@ -38,7 +37,7 @@ public class LevelGenerator : MonoBehaviour
         Time.timeScale = 1f;
 
         score = 0;
-        playerColor = "Blue";
+        playerColor = "Red";
         SetPlayerColor(playerColor);
         UpdateScore();
 
@@ -56,7 +55,10 @@ public class LevelGenerator : MonoBehaviour
 
         ChooseColorChallenge();
 
-        targetColorText.text = "Resultado objetivo: " + TranslateColor(targetResultColor);
+        if (targetColorText != null)
+        {
+            targetColorText.text = "Resultado objetivo: " + TranslateColor(targetResultColor);
+        }
 
         currentWalls[0] = Instantiate(redWallPrefab, new Vector3(leftX, wallYPosition, wallZPosition), Quaternion.identity);
         currentWalls[1] = Instantiate(yellowWallPrefab, new Vector3(centerX, wallYPosition, wallZPosition), Quaternion.identity);
@@ -71,15 +73,23 @@ public class LevelGenerator : MonoBehaviour
     {
         string[] wallColors = { "Red", "Yellow", "Blue" };
 
-        correctWallColor = wallColors[Random.Range(0, wallColors.Length)];
-        targetResultColor = MixColors(playerColor, correctWallColor);
+        // Elegimos una barra aleatoria
+        string selectedWall = wallColors[Random.Range(0, wallColors.Length)];
+
+        // Generamos el resultado con base en el color actual del jugador
+        targetResultColor = MixColors(playerColor, selectedWall);
+
+        Debug.Log("Color esfera: " + playerColor);
+        Debug.Log("Barra elegida: " + selectedWall);
+        Debug.Log("Resultado objetivo: " + targetResultColor);
     }
 
     public void CheckWallCollision(string wallColor)
     {
         string resultColor = MixColors(playerColor, wallColor);
 
-        if (wallColor == correctWallColor)
+        // ✅ VALIDACIÓN CORRECTA (por resultado)
+        if (resultColor == targetResultColor)
         {
             score++;
             UpdateScore();
@@ -98,61 +108,40 @@ public class LevelGenerator : MonoBehaviour
     string MixColors(string colorA, string colorB)
     {
         if (colorA == colorB)
-        {
             return colorA;
-        }
 
         if ((colorA == "Blue" && colorB == "Yellow") || (colorA == "Yellow" && colorB == "Blue"))
-        {
             return "Green";
-        }
 
         if ((colorA == "Red" && colorB == "Yellow") || (colorA == "Yellow" && colorB == "Red"))
-        {
             return "Orange";
-        }
 
         if ((colorA == "Red" && colorB == "Blue") || (colorA == "Blue" && colorB == "Red"))
-        {
             return "Purple";
-        }
 
-        if (colorA == "Green" && colorB == "Red")
-        {
+        if ((colorA == "Green" && colorB == "Red") || (colorA == "Red" && colorB == "Green"))
             return "Brown";
-        }
 
-        if (colorA == "Orange" && colorB == "Blue")
-        {
+        if ((colorA == "Orange" && colorB == "Blue") || (colorA == "Blue" && colorB == "Orange"))
             return "Brown";
-        }
 
-        if (colorA == "Purple" && colorB == "Yellow")
-        {
+        if ((colorA == "Purple" && colorB == "Yellow") || (colorA == "Yellow" && colorB == "Purple"))
             return "Brown";
-        }
 
-        return colorB;
+        return colorA;
     }
 
     void SetPlayerColor(string color)
     {
         if (playerRenderer == null) return;
 
-        if (color == "Red")
-            playerRenderer.material.color = Color.red;
-        else if (color == "Yellow")
-            playerRenderer.material.color = Color.yellow;
-        else if (color == "Blue")
-            playerRenderer.material.color = Color.blue;
-        else if (color == "Green")
-            playerRenderer.material.color = Color.green;
-        else if (color == "Orange")
-            playerRenderer.material.color = new Color(1f, 0.5f, 0f);
-        else if (color == "Purple")
-            playerRenderer.material.color = new Color(0.5f, 0f, 1f);
-        else if (color == "Brown")
-            playerRenderer.material.color = new Color(0.45f, 0.25f, 0.1f);
+        if (color == "Red") playerRenderer.material.color = Color.red;
+        else if (color == "Yellow") playerRenderer.material.color = Color.yellow;
+        else if (color == "Blue") playerRenderer.material.color = Color.blue;
+        else if (color == "Green") playerRenderer.material.color = Color.green;
+        else if (color == "Orange") playerRenderer.material.color = new Color(1f, 0.5f, 0f);
+        else if (color == "Purple") playerRenderer.material.color = new Color(0.5f, 0f, 1f);
+        else if (color == "Brown") playerRenderer.material.color = new Color(0.45f, 0.25f, 0.1f);
     }
 
     void DestroyCurrentWalls()
@@ -176,6 +165,8 @@ public class LevelGenerator : MonoBehaviour
 
     void GameOver()
     {
+        Debug.Log("GAME OVER");
+
         DestroyCurrentWalls();
 
         if (gameOverPanel != null)

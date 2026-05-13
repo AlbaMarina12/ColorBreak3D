@@ -6,10 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Menu.unity
+    path: "Assets/Scenes/Men\xFA principal.unity"
     guid: 400652553d67da843b89ab67185824a1
   - enabled: 1
-    path: Assets/Scenes/Game.unity
+    path: Assets/Scenes/Nivel 1.unity
     guid: 6ea62e8e9a628a84db6162fa770d76e5
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

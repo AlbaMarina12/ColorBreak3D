@@ -24,7 +24,8 @@ public class GameManager : MonoBehaviour
     private int score = 0;
     private int highScore = 0;
 
-    private string correctBarrierColor;
+    private string currentPlayerColor;
+    private string targetColor;
     private LevelData[] levels;
 
     void Awake()
@@ -35,7 +36,6 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         Time.timeScale = 1f;
-
         highScore = PlayerPrefs.GetInt("HighScore", 0);
 
         CreateLevels();
@@ -52,29 +52,29 @@ public class GameManager : MonoBehaviour
     {
         levels = new LevelData[]
         {
-            new LevelData("Blue", "Yellow", "Green", new string[] { "Yellow", "Red", "Blue" }),
-            new LevelData("Red", "Blue", "Purple", new string[] { "Blue", "Yellow", "White" }),
-            new LevelData("Yellow", "Red", "Orange", new string[] { "Red", "Blue", "Black" }),
-            new LevelData("Red", "White", "Pink", new string[] { "White", "Blue", "Yellow" }),
-            new LevelData("Black", "White", "Gray", new string[] { "White", "Red", "Blue" }),
+            new LevelData("Blue", "Green", new string[] { "Yellow", "Red", "Blue" }),
+            new LevelData("Red", "Purple", new string[] { "Blue", "Yellow", "White" }),
+            new LevelData("Yellow", "Orange", new string[] { "Red", "Blue", "Black" }),
+            new LevelData("Red", "Pink", new string[] { "White", "Blue", "Yellow" }),
+            new LevelData("Black", "Gray", new string[] { "White", "Red", "Blue" }),
 
-            new LevelData("Blue", "Yellow", "Green", new string[] { "Red", "Yellow", "White" }),
-            new LevelData("Red", "Blue", "Purple", new string[] { "Yellow", "Black", "Blue" }),
-            new LevelData("Yellow", "Red", "Orange", new string[] { "Blue", "Red", "White" }),
-            new LevelData("White", "Red", "Pink", new string[] { "Red", "Blue", "Black" }),
-            new LevelData("White", "Black", "Gray", new string[] { "Yellow", "Black", "Blue" }),
+            new LevelData("Blue", "Green", new string[] { "Red", "Yellow", "White" }),
+            new LevelData("Red", "Purple", new string[] { "Yellow", "Black", "Blue" }),
+            new LevelData("Yellow", "Orange", new string[] { "Blue", "Red", "White" }),
+            new LevelData("White", "Pink", new string[] { "Red", "Blue", "Black" }),
+            new LevelData("White", "Gray", new string[] { "Yellow", "Black", "Blue" }),
 
-            new LevelData("Blue", "White", "Light Blue", new string[] { "White", "Red", "Yellow" }),
-            new LevelData("Red", "Yellow", "Orange", new string[] { "Blue", "Yellow", "Black" }),
-            new LevelData("Yellow", "Blue", "Green", new string[] { "Red", "Blue", "White" }),
-            new LevelData("Blue", "Red", "Purple", new string[] { "Yellow", "Black", "Red" }),
-            new LevelData("Black", "White", "Gray", new string[] { "Blue", "White", "Red" }),
+            new LevelData("Blue", "Light Blue", new string[] { "White", "Red", "Yellow" }),
+            new LevelData("Red", "Orange", new string[] { "Blue", "Yellow", "Black" }),
+            new LevelData("Yellow", "Green", new string[] { "Red", "Blue", "White" }),
+            new LevelData("Blue", "Purple", new string[] { "Yellow", "Black", "Red" }),
+            new LevelData("Black", "Gray", new string[] { "Blue", "White", "Red" }),
 
-            new LevelData("Red", "White", "Pink", new string[] { "Yellow", "White", "Blue" }),
-            new LevelData("Blue", "Yellow", "Green", new string[] { "Black", "Yellow", "Red" }),
-            new LevelData("Yellow", "Red", "Orange", new string[] { "White", "Blue", "Red" }),
-            new LevelData("White", "Blue", "Light Blue", new string[] { "Blue", "Red", "Black" }),
-            new LevelData("Red", "Blue", "Purple", new string[] { "White", "Blue", "Yellow" })
+            new LevelData("Red", "Pink", new string[] { "Yellow", "White", "Blue" }),
+            new LevelData("Blue", "Green", new string[] { "Black", "Yellow", "Red" }),
+            new LevelData("Yellow", "Orange", new string[] { "White", "Blue", "Red" }),
+            new LevelData("White", "Light Blue", new string[] { "Blue", "Red", "Black" }),
+            new LevelData("Red", "Purple", new string[] { "White", "Blue", "Yellow" })
         };
     }
 
@@ -88,9 +88,10 @@ public class GameManager : MonoBehaviour
 
         LevelData level = levels[currentLevel];
 
-        correctBarrierColor = level.correctBarrierColor;
+        currentPlayerColor = level.playerColor;
+        targetColor = level.targetColor;
 
-        ApplyPlayerColor(level.playerColor);
+        ApplyPlayerColor(currentPlayerColor);
 
         float newZ = player.position.z + distanceBetweenLevels;
 
@@ -104,16 +105,20 @@ public class GameManager : MonoBehaviour
             barriers[i].transform.position = position;
         }
 
-        UpdateUI(level.targetColor);
+        UpdateUI(targetColor);
     }
 
     public void CheckAnswer(string selectedBarrierColor)
     {
-        if (selectedBarrierColor == correctBarrierColor)
+        string resultColor = MixColors(currentPlayerColor, selectedBarrierColor);
+
+        if (resultColor == targetColor)
         {
             score += 10;
-            currentLevel++;
+            currentPlayerColor = resultColor;
+            ApplyPlayerColor(currentPlayerColor);
 
+            currentLevel++;
             SaveHighScore();
 
             HideBarriers();
@@ -123,6 +128,35 @@ public class GameManager : MonoBehaviour
         {
             GameOver();
         }
+    }
+
+    string MixColors(string playerColor, string barrierColor)
+    {
+        if ((playerColor == "Blue" && barrierColor == "Yellow") ||
+            (playerColor == "Yellow" && barrierColor == "Blue"))
+            return "Green";
+
+        if ((playerColor == "Red" && barrierColor == "Blue") ||
+            (playerColor == "Blue" && barrierColor == "Red"))
+            return "Purple";
+
+        if ((playerColor == "Yellow" && barrierColor == "Red") ||
+            (playerColor == "Red" && barrierColor == "Yellow"))
+            return "Orange";
+
+        if ((playerColor == "Red" && barrierColor == "White") ||
+            (playerColor == "White" && barrierColor == "Red"))
+            return "Pink";
+
+        if ((playerColor == "Black" && barrierColor == "White") ||
+            (playerColor == "White" && barrierColor == "Black"))
+            return "Gray";
+
+        if ((playerColor == "Blue" && barrierColor == "White") ||
+            (playerColor == "White" && barrierColor == "Blue"))
+            return "Light Blue";
+
+        return "Wrong";
     }
 
     void HideBarriers()
@@ -193,6 +227,30 @@ public class GameManager : MonoBehaviour
             case "Black":
                 playerRenderer.material.color = Color.black;
                 break;
+
+            case "Green":
+                playerRenderer.material.color = Color.green;
+                break;
+
+            case "Purple":
+                playerRenderer.material.color = new Color(0.5f, 0f, 0.5f);
+                break;
+
+            case "Orange":
+                playerRenderer.material.color = new Color(1f, 0.5f, 0f);
+                break;
+
+            case "Pink":
+                playerRenderer.material.color = new Color(1f, 0.4f, 0.7f);
+                break;
+
+            case "Gray":
+                playerRenderer.material.color = Color.gray;
+                break;
+
+            case "Light Blue":
+                playerRenderer.material.color = new Color(0.4f, 0.8f, 1f);
+                break;
         }
     }
 }
@@ -201,14 +259,12 @@ public class GameManager : MonoBehaviour
 public class LevelData
 {
     public string playerColor;
-    public string correctBarrierColor;
     public string targetColor;
     public string[] barrierColors;
 
-    public LevelData(string playerColor, string correctBarrierColor, string targetColor, string[] barrierColors)
+    public LevelData(string playerColor, string targetColor, string[] barrierColors)
     {
         this.playerColor = playerColor;
-        this.correctBarrierColor = correctBarrierColor;
         this.targetColor = targetColor;
         this.barrierColors = barrierColors;
     }

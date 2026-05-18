@@ -84,6 +84,13 @@ public class PlayerMovement : MonoBehaviour
             scoreManager.AddScore(1);
         }
 
+        SuperSpeedEffect efecto = GetComponent<SuperSpeedEffect>();
+
+        if (efecto != null)
+        {
+            efecto.ActivateSpeed();
+        }
+
         Destroy(pared);
         CambiarColor();
     }
